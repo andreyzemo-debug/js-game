@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Code Rush — JavaScript Adventure</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<canvas id="bg-particles"></canvas>
+
+<!-- ========================= BOOT / LOADING ========================= -->
+<div id="screen-boot" class="screen active">
+  <div class="boot-wrap">
+    <div class="boot-logo">&lt;CODE <span>RUSH</span>/&gt;</div>
+    <div class="boot-bar"><div class="boot-bar-fill" id="boot-fill"></div></div>
+    <div class="boot-text" id="boot-text">Compiling world...</div>
+  </div>
+</div>
+
+<!-- ========================= MAIN MENU ========================= -->
+<div id="screen-menu" class="screen">
+  <div class="menu-panel glass">
+    <div class="logo">&lt;CODE <span>RUSH</span>/&gt;</div>
+    <div class="tagline">An Educational JavaScript Adventure</div>
+
+    <div class="menu-stats">
+      <div class="mstat"><span class="mstat-label">Level</span><span class="mstat-value" id="menu-level">1</span></div>
+      <div class="mstat"><span class="mstat-label">XP</span><span class="mstat-value" id="menu-xp">0</span></div>
+      <div class="mstat"><span class="mstat-label">Coins</span><span class="mstat-value" id="menu-coins">0</span></div>
+      <div class="mstat"><span class="mstat-label">Best Combo</span><span class="mstat-value" id="menu-combo">0</span></div>
+    </div>
+
+    <div class="menu-buttons">
+      <button class="btn btn-primary" id="btn-play">▶ Play Adventure</button>
+      <button class="btn btn-daily" id="btn-daily">🔥 Daily Challenge</button>
+      <button class="btn btn-secondary" id="btn-achievements">🏆 Achievements</button>
+      <button class="btn btn-secondary" id="btn-stats">📊 Statistics</button>
+      <button class="btn btn-secondary" id="btn-settings">⚙ Settings</button>
+    </div>
+    <div class="menu-footer">High Score: <span id="menu-highscore">0</span></div>
+  </div>
+</div>
+
+<!-- ========================= WORLD MAP ========================= -->
+<div id="screen-worldmap" class="screen">
+  <div class="topbar glass">
+    <button class="icon-btn" id="btn-map-back">← Menu</button>
+    <div class="topbar-title">Select World</div>
+    <div class="topbar-spacer"></div>
+  </div>
+  <div class="worldmap-grid" id="worldmap-grid"></div>
+</div>
+
+<!-- ========================= GAME SCREEN ========================= -->
+<div id="screen-game" class="screen">
+  <div class="hud glass">
+    <div class="hud-left">
+      <button class="icon-btn" id="btn-pause">⏸</button>
+      <div class="hud-world" id="hud-world-name">World 1</div>
+    </div>
+    <div class="hud-center">
+      <div class="xp-bar-wrap">
+        <div class="xp-bar"><div class="xp-bar-fill" id="hud-xp-fill"></div></div>
+        <div class="xp-label"><span id="hud-level">Lv.1</span></div>
+      </div>
+    </div>
+    <div class="hud-right">
+      <div class="hud-pill"><span class="pill-icon">🪙</span><span id="hud-coins">0</span></div>
+      <div class="hud-pill combo-pill" id="hud-combo-pill"><span class="pill-icon">⚡</span><span id="hud-combo">x1</span></div>
+      <div class="hud-pill"><span class="pill-icon">❤</span><span id="hud-lives">3</span></div>
+    </div>
+  </div>
+
+  <div class="game-viewport">
+    <canvas id="game-canvas"></canvas>
+    <div class="gate-hint" id="gate-hint">Press ↑ / SPACE to interface with the Gate</div>
+  </div>
+
+  <div class="mobile-controls" id="mobile-controls">
+    <button class="mc-btn" id="mc-left">◀</button>
+    <button class="mc-btn" id="mc-jump">▲</button>
+    <button class="mc-btn" id="mc-right">▶</button>
+  </div>
+</div>
+
+<!-- ========================= QUESTION MODAL ========================= -->
+<div id="modal-question" class="modal-overlay">
+  <div class="modal question-modal glass">
+    <div class="q-header">
+      <div class="q-category" id="q-category">VARIABLES</div>
+      <div class="q-timer-wrap"><div class="q-timer-fill" id="q-timer-fill"></div></div>
+    </div>
+    <div class="q-text" id="q-text">Question text goes here?</div>
+    <div class="q-answers" id="q-answers"></div>
+    <div class="q-footer">
+      <div class="q-combo">Combo: <span id="q-combo-val">x1</span></div>
+      <div class="q-reward">+<span id="q-reward-xp">10</span> XP &nbsp; +<span id="q-reward-coins">5</span> 🪙</div>
+    </div>
+  </div>
+</div>
+
+<!-- ========================= FEEDBACK POPUP ========================= -->
+<div id="feedback-popup" class="feedback-popup"></div>
+
+<!-- ========================= PAUSE MODAL ========================= -->
+<div id="modal-pause" class="modal-overlay">
+  <div class="modal glass small-modal">
+    <h2>Paused</h2>
+    <div class="menu-buttons">
+      <button class="btn btn-primary" id="btn-resume">▶ Resume</button>
+      <button class="btn btn-secondary" id="btn-restart-level">⟳ Restart Level</button>
+      <button class="btn btn-secondary" id="btn-pause-settings">⚙ Settings</button>
+      <button class="btn btn-danger" id="btn-quit-menu">✕ Quit to Menu</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========================= LEVEL COMPLETE MODAL ========================= -->
+<div id="modal-complete" class="modal-overlay">
+  <div class="modal glass small-modal">
+    <h2 id="complete-title">World Complete!</h2>
+    <div class="complete-stats">
+      <div class="cstat">Correct Answers <span id="complete-correct">0</span></div>
+      <div class="cstat">Best Combo <span id="complete-bestcombo">x1</span></div>
+      <div class="cstat">XP Earned <span id="complete-xp">0</span></div>
+      <div class="cstat">Coins Earned <span id="complete-coins">0</span></div>
+    </div>
+    <div id="complete-newachievements"></div>
+    <div class="menu-buttons">
+      <button class="btn btn-primary" id="btn-complete-next">Next World →</button>
+      <button class="btn btn-secondary" id="btn-complete-map">World Map</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========================= GAME OVER MODAL ========================= -->
+<div id="modal-gameover" class="modal-overlay">
+  <div class="modal glass small-modal">
+    <h2>System Failure</h2>
+    <p class="gameover-text">You ran out of lives. Debug and try again!</p>
+    <div class="complete-stats">
+      <div class="cstat">Score <span id="gameover-score">0</span></div>
+    </div>
+    <div class="menu-buttons">
+      <button class="btn btn-primary" id="btn-gameover-retry">⟳ Retry Level</button>
+      <button class="btn btn-secondary" id="btn-gameover-menu">Main Menu</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========================= ACHIEVEMENTS MODAL ========================= -->
+<div id="modal-achievements" class="modal-overlay">
+  <div class="modal glass large-modal">
+    <div class="modal-header-row">
+      <h2>Achievements</h2>
+      <button class="icon-btn modal-close" data-close="modal-achievements">✕</button>
+    </div>
+    <div class="achievements-grid" id="achievements-grid"></div>
+  </div>
+</div>
+
+<!-- ========================= STATISTICS MODAL ========================= -->
+<div id="modal-stats" class="modal-overlay">
+  <div class="modal glass large-modal">
+    <div class="modal-header-row">
+      <h2>Statistics</h2>
+      <button class="icon-btn modal-close" data-close="modal-stats">✕</button>
+    </div>
+    <div class="stats-grid" id="stats-grid"></div>
+  </div>
+</div>
+
+<!-- ========================= SETTINGS MODAL ========================= -->
+<div id="modal-settings" class="modal-overlay">
+  <div class="modal glass small-modal">
+    <div class="modal-header-row">
+      <h2>Settings</h2>
+      <button class="icon-btn modal-close" data-close="modal-settings">✕</button>
+    </div>
+    <div class="settings-row">
+      <span>Sound Effects</span>
+      <label class="switch"><input type="checkbox" id="toggle-sound" checked><span class="slider"></span></label>
+    </div>
+    <div class="settings-row">
+      <span>Music</span>
+      <label class="switch"><input type="checkbox" id="toggle-music" checked><span class="slider"></span></label>
+    </div>
+    <div class="settings-row">
+      <span>Fullscreen</span>
+      <button class="btn btn-secondary btn-small" id="btn-fullscreen">⛶ Toggle</button>
+    </div>
+    <div class="settings-row">
+      <span>Reset Progress</span>
+      <button class="btn btn-danger btn-small" id="btn-reset-progress">Reset</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
